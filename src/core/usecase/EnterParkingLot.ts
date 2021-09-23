@@ -1,11 +1,19 @@
-import ParkingLot from "./ParkingLot";
+import ParkingLotRepository from "../repository/ParkingLotRepository";
+import ParkedCar from "../entity/ParkedCar";
 
 export default class EnterParkingLot {
-    constructor() {
+    constructor(private parkingLotRepository: ParkingLotRepository) {
     }
 
-    execute(){
-        const parkingLot = new ParkingLot('Shopping', 100, 8, 2);
+    async execute(code: string, plate: string, date: Date){
+
+        const parkingLot = await this.parkingLotRepository.getParkingLot(code)
+        const parkedCar = new ParkedCar(code, plate, date);
+
+        if (parkingLot.isOpen(parkedCar.date)) throw new Error("he parking lot is closed");
+
+        if (parkingLot.isFull()) throw new Error("The parking lot is full")
+        await this.parkingLotRepository.saveParkedCar(parkedCar.code, parkedCar.plate, parkedCar.date);
         return parkingLot;
     }
 }
